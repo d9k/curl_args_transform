@@ -1,0 +1,82 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+        {
+            "name": "Launch Program",
+            "request": "launch",
+            "type": "node",
+            "program": "${workspaceFolder}/main.ts",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "/home/d9k/.deno/bin/deno",
+            "runtimeArgs": [
+                "run",
+                "--unstable",
+                "--inspect-wait",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9229
+        },
+        {
+            "name": "test",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "/home/d9k/.deno/bin/deno",
+            "runtimeArgs": [
+                "test",
+                "--unstable",
+                "--inspect-brk",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9229
+        },
+        {
+            "name": "test experimental (freeze)",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "/home/d9k/.deno/bin/deno",
+            "runtimeArgs": [
+                "test",
+                "--unstable",
+                "--inspect",
+                "--allow-all"
+            ],
+            "attachSimplePort": 9229
+        },
+        {
+            "name": "test CurlHeader",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "/home/d9k/.deno/bin/deno",
+            "runtimeArgs": [
+                "test",
+                "--unstable",
+                "--inspect-brk",
+                "--allow-all",
+                "src/test/CurlHeader.test.ts"
+            ],
+            "attachSimplePort": 9229
+        },
+        {
+            "name": "test curlArgsTransform()",
+            "request": "launch",
+            "type": "node",
+            "cwd": "${workspaceFolder}",
+            "runtimeExecutable": "/home/d9k/.deno/bin/deno",
+            "runtimeArgs": [
+                "test",
+                "--unstable",
+                "--inspect-brk",
+                "--allow-all",
+                "src/test/curlArgsTransform.test.ts"
+            ],
+            "attachSimplePort": 9229
+        }
+    ]
+}
