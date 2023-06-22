@@ -1,9 +1,10 @@
 import * as shellQuote from 'npm:shell-quote@1.8.1';
 
 import { trim } from '../deps/lodash.ts';
-import { CurlHeader } from './CurlHeader.ts';
+import { CurlHeader, CurlHeaderOptions } from './CurlHeader.ts';
+import { doubleQuoteArg } from './doubleQuoteArg.ts';
 
-export type CurlArgsTransformArgs = {
+export type CurlArgsTransformArgs = Pick<CurlHeaderOptions, 'replaceAuthTokenWithVariable'> & {
     cutDuplicateHeaders?: boolean;
     cutArgs?: string[];
 
@@ -34,19 +35,20 @@ export const CURL_ARGS_TRANSFORM_ARGS_DEFAULT: Required<CurlArgsTransformArgs> =
         'origin',
         'referer',
     ],
+    replaceAuthTokenWithVariable: true,
 };
-
-/** https://stackoverflow.com/a/7685469/1760643 */
-function quoteArg (cmd: string) {
-    return '"'+cmd.replace(/(["'$`\\])/g,'\\$1')+'"';
-}
 
 function hyphens(flagName: string) {
     return (flagName.length > 1) ? '--' : '-';
 }
 
 export function curlArgsTransform (curlCommandString: string, args: CurlArgsTransformArgs = {})  {
-    const { cutDuplicateHeaders, cutHeaders, cutArgs } = {
+    const {
+        cutArgs,
+        cutDuplicateHeaders,
+        cutHeaders,
+        replaceAuthTokenWithVariable
+    } = {
         ...CURL_ARGS_TRANSFORM_ARGS_DEFAULT,
         ...args
     };
@@ -63,6 +65,12 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
 
     const positionalArgs = [];
     const keyArgs: {[key: string]: string} = {};
+
+    const curlHeaderOptions: CurlHeaderOptions = {
+        replaceAuthTokenWithVariable,
+    }
+
+    let authTokenValue = '';
 
     while (restArgs.length) {
         const arg = restArgs.shift();
@@ -88,13 +96,16 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
         switch (argNameTrimmed) {
             case 'H':
             case 'header': {
-                const headerObject = new CurlHeader(argValue);
+                const headerObject = new CurlHeader(argValue, curlHeaderOptions);
                 const headerLowercaseName = headerObject.lowercaseName;
                 if (cutDuplicateHeaders && lowercaseHeadersNames.includes(headerLowercaseName)) {
                     continue;
                 }
                 if (cutHeaders.includes(headerLowercaseName)) {
                     continue;
+                }
+                if (headerObject.hasAuthToken) {
+                    authTokenValue = headerObject.authTokenValue;
                 }
                 lowercaseHeadersNames.push(headerLowercaseName);
                 headers.push(headerObject);
@@ -114,14 +125,25 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
 
     // TODO escape
     // TODO long keys => --
-    const headersText = `${H}${headers.map((h) => quoteArg(`${h}`)).join(H)}`;
+    const headersText = `${H}${headers.map(
+        (h) => doubleQuoteArg(`${h}`, {noEscapeDollarSign: h.withVariable})
+    ).join(H)}`;
+
     const keyArgsText = Object.entries(keyArgs).map(
         ([key, value]) => {
-            const argValueText = value ? ` ${quoteArg(value)}` : '';
+            const argValueText = value ? ` ${doubleQuoteArg(value)}` : '';
             return `${hyphens(key)}${key}${argValueText}`;
         }
     ).join(S);
-    const positionalArgsText = positionalArgs.map(quoteArg).join(S);
+    const positionalArgsText = positionalArgs.map((a) => doubleQuoteArg(a)).join(S);
 
-    return `${cmd}${S}${positionalArgsText}${S}${keyArgsText}${headersText}`;
+    const codeLines: string[] = [];
+
+    if (replaceAuthTokenWithVariable && authTokenValue) {
+        codeLines.push(`export AUTH_TOKEN=${doubleQuoteArg(authTokenValue)}`);
+    }
+
+    const codeLinesText = codeLines.length ? `${codeLines.join("\n")}\n\n` : '';
+
+    return `${codeLinesText}${cmd}${S}${positionalArgsText}${S}${keyArgsText}${headersText}`;
 }

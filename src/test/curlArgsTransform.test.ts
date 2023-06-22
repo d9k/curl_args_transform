@@ -4,10 +4,12 @@ import { curlArgsTransform } from "../curlArgsTransform.ts";
 Deno.test("curlArgsTransfor(): BFF cli args", () => {
     const result = curlArgsTransform(`curl -X GET -H "Authorization:Bearer some_heavily_encoded_bearer" -H "authorization:Bearer some_heavily_encoded_bearer" -H "x-user-agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36" -H "uber-trace-id:f123dc6756da6862:5cbd174f890cef05:f123dc6756da6862:1" "http://companies.myapi.local:12341/licenses_packages?company_ids=3456&status=inactive&page[size]=1"`);
 
-    const expected = `curl \\
+    const expected = `export AUTH_TOKEN="some_heavily_encoded_bearer"
+
+curl \\
   "http://companies.myapi.local:12341/licenses_packages?company_ids=3456&status=inactive&page[size]=1" \\
   -X "GET" \\
-  -H "Authorization:Bearer some_heavily_encoded_bearer"`;
+  -H "Authorization: Bearer \$AUTH_TOKEN"`;
 
     assertEquals(result, expected);
 })
