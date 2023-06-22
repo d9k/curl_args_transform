@@ -2,20 +2,18 @@ import { trim } from '../deps/lodash.ts';
 
 export class CurlHeader {
   name: string;
+  lowercaseName: string;
   value: string;
-  quote = `"`;
 
   constructor(curlHeaderString: string) {
-    this.quote = [`'`, '"'].includes(curlHeaderString[0]) ? curlHeaderString[0] : ``;
+    [this.name, this.value] = curlHeaderString.split(/:(.*)/s);
 
-    const unquoted = this.quote ? trim(curlHeaderString, this.quote, null) : curlHeaderString;
-
-    [this.name, this.value] = unquoted.split(/:(.*)/s);
+    this.lowercaseName = this.name.toLowerCase();
   }
 
   toString() {
-    const {quote, name, value} = this;
+    const {name, value} = this;
 
-    return `${quote}${name}:${value}${quote}`;
+    return `${name}:${value}`;
   }
 }
