@@ -5,6 +5,7 @@ import { CurlHeader } from './CurlHeader.ts';
 
 export type CurlArgsTransformArgs = {
     cutDuplicateHeaders?: boolean;
+    cutArgs?: string[];
 
     /** in lowercase */
     cutHeaders?: string[];
@@ -12,7 +13,27 @@ export type CurlArgsTransformArgs = {
 
 export const CURL_ARGS_TRANSFORM_ARGS_DEFAULT: Required<CurlArgsTransformArgs> = {
     cutDuplicateHeaders: true,
-    cutHeaders: ['x-user-agent', 'uber-trace-id'],
+    cutArgs: ['compressed'],
+    cutHeaders: [
+        'sec-ch-ua',
+        'sec-ch-ua-mobile',
+        'sec-ch-ua-platform',
+        'sec-fetch-dest',
+        'sec-fetch-mode',
+        'sec-fetch-site',
+        'uber-trace-id',
+        'user-agent',
+        'x-requested-with',
+        'x-user-agent',
+        // TODO probably make ability to enable these more useful headers
+        'accept',
+        'accept-language',
+        'authority',
+        'cache-control',
+        'pragma',
+        'origin',
+        'referer',
+    ],
 };
 
 /** https://stackoverflow.com/a/7685469/1760643 */
@@ -25,12 +46,14 @@ function hyphens(flagName: string) {
 }
 
 export function curlArgsTransform (curlCommandString: string, args: CurlArgsTransformArgs = {})  {
-    const { cutDuplicateHeaders, cutHeaders } = {
+    const { cutDuplicateHeaders, cutHeaders, cutArgs } = {
         ...CURL_ARGS_TRANSFORM_ARGS_DEFAULT,
         ...args
     };
 
-    const argsList = shellQuote.parse(curlCommandString);
+    const curlCommandStringWithoutReturns = curlCommandString.replace(/\\[\n\r]+/gm, " ")
+
+    const argsList = shellQuote.parse(curlCommandStringWithoutReturns);
 
     const restArgs= [...argsList];
     const cmd = restArgs.shift();
@@ -49,15 +72,20 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
             continue;
         }
 
-        const argTrimmed = trim(arg, '-', null);
-        let argValue = restArgs.shift();
+        const argNameTrimmed = trim(arg, '-', null);
 
-        if (argValue[0] == '-') {
-            restArgs.unshift(argValue);
-            argValue = '';
+        let argValue = '';
+
+        if (restArgs.length) {
+            argValue = restArgs.shift();
+
+            if (argValue[0] == '-') {
+                restArgs.unshift(argValue);
+                argValue = '';
+            }
         }
 
-        switch (argTrimmed) {
+        switch (argNameTrimmed) {
             case 'H':
             case 'header': {
                 const headerObject = new CurlHeader(argValue);
@@ -73,11 +101,15 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
                 break;
             }
             default:
-                keyArgs[argTrimmed] = argValue;
+                if (cutArgs.includes(argNameTrimmed)) {
+                    continue;
+                }
+
+                keyArgs[argNameTrimmed] = argValue;
         }
     }
 
-    const S = "\n  ";
+    const S = " \\\n  ";
     const H = `${S}-H `;
 
     // TODO escape
@@ -91,5 +123,5 @@ export function curlArgsTransform (curlCommandString: string, args: CurlArgsTran
     ).join(S);
     const positionalArgsText = positionalArgs.map(quoteArg).join(S);
 
-    return `${cmd}${S}${keyArgsText}${headersText}${S}${positionalArgsText}`;
+    return `${cmd}${S}${positionalArgsText}${S}${keyArgsText}${headersText}`;
 }
