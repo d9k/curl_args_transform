@@ -13,8 +13,8 @@ Deno 1.20+ required (run `deno upgrade` if not so).
 ```
 git clone git@github.com:d9k/curl_args_transform.git
 cd curl_args_transform
-deno task install`
-``
+deno task install
+```
 
 ## Run
 
@@ -35,4 +35,3 @@ or
 ## Testing
 
 `deno test`
-```
