@@ -7,11 +7,6 @@ export function doubleQuoteArg(
   cmd: string,
   { noEscapeDollarSign }: QuoteArgOpts = {},
 ) {
-  // const {
-  //     noEscapeDollarSign,
-  // } = opts;
-  // return '"'+cmd.replace(/(["'$`\\])/g,'\\$1')+'"';
-
   const symbols = ['\'', '"', '\\\\'];
 
   if (!noEscapeDollarSign) {

@@ -1,6 +1,9 @@
 {
   "tasks": {
-    "test": "deno test"
+    "install": "deno install --force --allow-read --name curl_args_transform main.ts",
+    "test": "deno test",
+    "run": "deno run --allow-read main.ts",
+    "debug": "deno run --unstable --inspect --allow-all main.ts"
   },
   "fmt": {
     "indentWidth": 2,

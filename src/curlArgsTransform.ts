@@ -147,8 +147,6 @@ export function curlArgsTransform(
   const S = ' \\\n  ';
   const H = `${S}-H `;
 
-  // TODO escape
-  // TODO long keys => --
   const headersText = `${H}${
     headers.map(
       (h) =>
