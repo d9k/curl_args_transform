@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Program",
+      "name": "curl_args_transform /tmp/t",
       "request": "launch",
       "type": "node",
       "program": "${workspaceFolder}/main.ts",
@@ -17,6 +17,7 @@
         "--inspect-wait",
         "--allow-all"
       ],
+      "args": ["/tmp/t"],
       "attachSimplePort": 9229
     },
     {

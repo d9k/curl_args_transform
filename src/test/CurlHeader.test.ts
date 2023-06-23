@@ -42,3 +42,22 @@ Deno.test('CurlHeader: authorization bearer', () => {
 
   assertEquals(`${obj}`, output);
 });
+
+Deno.test('CurlHeader: authorization non-bearer', () => {
+  const input =
+    `authorization: SAPISIDHASH 1687505148_e96d6ed1cdc3b700d8d56094325729ba1754d9c9`;
+
+  const obj = new CurlHeader(input, {
+    replaceAuthTokenWithVariable: true,
+  });
+
+  const parts: Partial<CurlHeader> = {
+    name: 'authorization',
+    value:
+      'SAPISIDHASH 1687505148_e96d6ed1cdc3b700d8d56094325729ba1754d9c9',
+  };
+
+  assertObjectMatch(obj, parts);
+
+  assertEquals(`${obj}`, input);
+});

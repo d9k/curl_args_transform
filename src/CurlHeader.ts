@@ -42,8 +42,10 @@ export class CurlHeader {
 
     if (replaceAuthTokenWithVariable) {
       if (this.lowercaseName === 'authorization') {
-        this.withVariable = true;
-        this.value = 'Bearer $AUTH_TOKEN';
+        if (this.value.startsWith('Bearer')) {
+          this.withVariable = true;
+          this.value = 'Bearer $AUTH_TOKEN';
+        }
       }
     }
   }
