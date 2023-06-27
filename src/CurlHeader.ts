@@ -1,6 +1,4 @@
-import { boolean } from 'https://deno.land/x/cliffy@v0.25.4/flags/types/boolean.ts';
 import { trim } from '../deps/lodash.ts';
-import startsWith from 'https://raw.githubusercontent.com/lodash/lodash/4.17.21-es/startsWith.js';
 
 export type CurlHeaderOptions = {
   replaceAuthTokenWithVariable?: boolean;

@@ -45,6 +45,7 @@ export const CURL_ARGS_TRANSFORM_ARGS_DEFAULT: Required<
     'accept-language',
     'authority',
     'cache-control',
+    'connection',
     'pragma',
     'origin',
     'referer',
@@ -154,7 +155,7 @@ export function curlArgsTransform(
   }
 
   const S = ' \\\n  ';
-  const H = `${S}-H `;
+  const H = `-H `;
 
   const headersText = `${H}${
     headers.map(
@@ -162,7 +163,7 @@ export function curlArgsTransform(
         doubleQuoteArg(`${h}`, {
           noEscapeDollarSign: h.withVariable,
         }),
-    ).join(H)
+    ).join(`${S}${H}`)
   }`;
 
   const keyArgsText = Object.entries(keyArgs).map(
@@ -191,5 +192,8 @@ export function curlArgsTransform(
     ? `${codeLines.join('\n')}\n\n`
     : '';
 
-  return `${codeLinesText}${cmd}${S}${positionalArgsText}${S}${keyArgsText}${headersText}`;
+  return `${codeLinesText}${
+    [cmd, positionalArgsText, keyArgsText, headersText]
+      .filter(Boolean).join(S)
+  }`;
 }

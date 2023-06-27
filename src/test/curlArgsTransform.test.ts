@@ -48,3 +48,14 @@ Deno.test('curlArgsTransfor(): BFF cli args', () => {
   -H "cookie: my_tasty_cookie"`,
   );
 });
+
+Deno.test('curlArgsTransfor(): BFF cli args', () => {
+  assertEquals(
+    curlArgsTransform(
+      `curl "http://localhost:5000/results/all/1234" -H "authorization: some"`,
+    ),
+    `curl \\
+  "http://localhost:5000/results/all/1234" \\
+  -H "authorization: some"`,
+  );
+});
