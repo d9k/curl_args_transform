@@ -1,5 +1,8 @@
 # curl_args_transform
 
+Cut unnecessary args from curl command export. (See
+[examples in tests](./src/test/curlArgsTransform.test.ts))
+
 Deno 1.20+ required (run `deno upgrade` if not so).
 
 [Install Deno from scratch](https://deno.com/manual/getting_started/installation).
