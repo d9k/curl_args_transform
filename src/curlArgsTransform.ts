@@ -9,6 +9,7 @@ import * as shellQuote from '../deps/shell-quote.ts';
 export type CurlArgsTransformArgs =
   & Pick<CurlHeaderOptions, 'replaceAuthTokenWithVariable'>
   & {
+    curArgsWithDefaultValues?: boolean;
     cutDuplicateHeaders?: boolean;
     cutArgs?: string[];
 
@@ -21,6 +22,7 @@ export const CURL_ARGS_TRANSFORM_ARGS_DEFAULT: Required<
 > = {
   cutDuplicateHeaders: true,
   cutArgs: ['compressed'],
+  curArgsWithDefaultValues: true,
   cutHeaders: [
     'sec-ch-ua',
     'sec-ch-ua-arch',
@@ -64,6 +66,7 @@ export function curlArgsTransform(
 ) {
   const {
     cutArgs,
+    curArgsWithDefaultValues,
     cutDuplicateHeaders,
     cutHeaders,
     replaceAuthTokenWithVariable,
@@ -168,12 +171,24 @@ export function curlArgsTransform(
 
   const keyArgsText = Object.entries(keyArgs).map(
     ([key, value]) => {
+      const lowercaseKey = key.toLocaleLowerCase();
+
+      if (curArgsWithDefaultValues) {
+        switch (lowercaseKey) {
+          case 'x':
+            if (value === 'GET') {
+              return '';
+            }
+            break;
+        }
+      }
+
       const argValueText = value
         ? ` ${doubleQuoteArg(value)}`
         : '';
       return `${hyphens(key)}${key}${argValueText}`;
     },
-  ).join(S);
+  ).filter(Boolean).join(S);
   const positionalArgsText = positionalArgs.map((a) =>
     doubleQuoteArg(a)
   ).join(

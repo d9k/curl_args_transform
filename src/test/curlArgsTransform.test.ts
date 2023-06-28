@@ -11,7 +11,6 @@ Deno.test('curlArgsTransfor(): BFF cli args', () => {
 
 curl \\
   "http://companies.myapi.local:12341/licenses_packages?company_ids=3456&status=inactive&page[size]=1" \\
-  -X "GET" \\
   -H "Authorization: Bearer \$AUTH_TOKEN"`;
 
   assertEquals(result, expected);
@@ -57,5 +56,18 @@ Deno.test('curlArgsTransfor(): BFF cli args', () => {
     `curl \\
   "http://localhost:5000/results/all/1234" \\
   -H "authorization: some"`,
+  );
+});
+
+Deno.test('curlArgsTransfor(): cut argument with default value', () => {
+  assertEquals(
+    curlArgsTransform(
+      `curl -X GET -H "authorization:Bearer some" "http://users-service.local/users"`,
+    ),
+    `export AUTH_TOKEN="some"
+
+curl \\
+  "http://users-service.local/users" \\
+  -H "authorization: Bearer $AUTH_TOKEN"`,
   );
 });
