@@ -63,7 +63,11 @@ window.onload = async function main() {
     : await readInputPipe();
 
   if (inputText) {
-    console.log(curlArgsTransform(inputText));
+    Deno.stdout.write(
+      new TextEncoder().encode(
+        curlArgsTransform(inputText),
+      ),
+    );
   } else {
     throw Error('No input text');
   }
